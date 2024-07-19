@@ -24,6 +24,9 @@ jobs:
         with:
           r-version: "4.4.0"
 
+      - name: Generate manifest.txt
+        run: find renv/library -type f > /home/runner/work/qmd_dashboard_tutorial/qmd_dashboard_tutorial/manifest.txt
+
       - name: Display manifest.txt
         run: cat /home/runner/work/qmd_dashboard_tutorial/qmd_dashboard_tutorial/manifest.txt
 
