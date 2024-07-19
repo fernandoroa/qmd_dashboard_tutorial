@@ -7,6 +7,9 @@ on:
 
 name: Quarto Publish
 
+env:
+  RENV_PATHS_ROOT: ~/.cache/R/renv
+
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
@@ -24,25 +27,19 @@ jobs:
         with:
           r-version: "4.4.0"
 
-      - name: Generate manifest.txt
-        run: find renv/library -type f > /home/runner/work/qmd_dashboard_tutorial/qmd_dashboard_tutorial/manifest.txt
-
-      - name: Display manifest.txt
-        run: cat /home/runner/work/qmd_dashboard_tutorial/qmd_dashboard_tutorial/manifest.txt
-
       - name: Cache R packages
         uses: actions/cache@v3
         with:
-          path: renv/library
-          key: ${{ runner.os }}-r-${{ hashFiles('**/renv.lock') }}
+          path: ${{ env.RENV_PATHS_ROOT }}
+          key: ${{ runner.os }}-renv-${{ hashFiles('**/renv.lock') }}
           restore-keys: |
-            ${{ runner.os }}-r-
+            ${{ runner.os }}-renv-
 
-      - name: Install renv
-        run: Rscript -e 'install.packages("renv")'
-
-      - name: Restore R dependencies
-        run: Rscript -e 'renv::restore()'
+      - name: Restore packages
+        shell: Rscript {0}
+        run: |
+          if (!requireNamespace("renv", quietly = TRUE)) install.packages("renv")
+          renv::restore()
 
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
