@@ -22,16 +22,23 @@ jobs:
       - name: Generate apt-packages.txt
         run: echo "libcurl4-openssl-dev libssl-dev libharfbuzz-dev libfribidi-dev" > apt-packages.txt
 
-      - name: Cache apt packages
+      - name: Create tarball of apt directories
+        run: |
+          sudo tar --exclude='./archives/lock' --exclude='./archives/partial' --exclude='./lists/lock' --exclude='./lists/partial' -czvf apt-cache.tar.gz /var/cache/apt /var/lib/apt/lists
+
+      - name: Cache apt packages tarball
         id: cache-apt
         uses: actions/cache@v3
         with:
-          path: |
-            /var/cache/apt
-            /var/lib/apt/lists
+          path: apt-cache.tar.gz
           key: ${{ runner.os }}-apt-${{ hashFiles('apt-packages.txt') }}
           restore-keys: |
             ${{ runner.os }}-apt-
+
+      - name: Extract apt packages tarball
+        if: steps.cache-apt.outputs.cache-hit == 'true'
+        run: |
+          sudo tar -xzvf apt-cache.tar.gz -C /
 
       - name: Install system dependencies
         run: |
