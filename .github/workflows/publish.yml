@@ -24,6 +24,9 @@ jobs:
         with:
           r-version: "4.4.0"
 
+      - name: Display manifest.txt
+        run: cat /home/runner/work/qmd_dashboard_tutorial/qmd_dashboard_tutorial/manifest.txt
+
       - name: Cache R packages
         uses: actions/cache@v3
         with:
