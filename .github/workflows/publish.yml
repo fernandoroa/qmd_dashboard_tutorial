@@ -19,8 +19,24 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Generate apt-packages.txt
+        run: echo "libcurl4-openssl-dev libssl-dev libharfbuzz-dev libfribidi-dev" > apt-packages.txt
+
+      - name: Cache apt packages
+        id: cache-apt
+        uses: actions/cache@v3
+        with:
+          path: |
+            /var/cache/apt
+            /var/lib/apt/lists
+          key: ${{ runner.os }}-apt-${{ hashFiles('apt-packages.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-apt-
+
       - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev libssl-dev libharfbuzz-dev libfribidi-dev
+        run: |
+          sudo apt-get update
+          xargs sudo apt-get install -y < apt-packages.txt
 
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
