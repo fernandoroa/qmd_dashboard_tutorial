@@ -27,7 +27,7 @@ jobs:
       - name: Cache R packages
         uses: actions/cache@v3
         with:
-          path: ${{ runner.cache }}/R
+          path: renv/library
           key: ${{ runner.os }}-r-${{ hashFiles('**/renv.lock') }}
           restore-keys: |
             ${{ runner.os }}-r-
