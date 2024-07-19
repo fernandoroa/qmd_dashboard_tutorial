@@ -24,7 +24,7 @@ head(starwars)
 
 ### Row {height="10%"}
 
-Placeholder test gh-actions with apt cache
+Placeholder test gh-actions with renv cache
 
 ### Row {height="70%"}
 

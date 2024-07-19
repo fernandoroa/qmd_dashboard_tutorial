@@ -19,36 +19,10 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Generate apt-packages.txt
-        run: echo "libcurl4-openssl-dev libssl-dev libharfbuzz-dev libfribidi-dev" > apt-packages.txt
-
-      - name: Create tarball of apt and system directories
-        run: |
-          sudo tar --exclude='./var/cache/apt/archives/lock' \
-                   --exclude='./var/cache/apt/archives/partial' \
-                   --exclude='./var/lib/apt/lists/lock' \
-                   --exclude='./var/lib/apt/lists/partial' \
-                   -czvf apt-cache.tar.gz /usr /lib /var/cache/apt /var/lib/apt/lists
-
-      - name: Cache apt packages tarball
-        id: cache-apt
-        uses: actions/cache@v3
-        with:
-          path: apt-cache.tar.gz
-          key: ${{ runner.os }}-apt-${{ hashFiles('apt-packages.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-apt-
-
-      - name: Extract apt packages tarball
-        if: steps.cache-apt.outputs.cache-hit == 'true'
-        run: |
-          sudo tar -xzvf apt-cache.tar.gz -C /
-
       - name: Install system dependencies
-        if: steps.cache-apt.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update
-          xargs sudo apt-get install -y < apt-packages.txt
+          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libharfbuzz-dev libfribidi-dev
 
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
