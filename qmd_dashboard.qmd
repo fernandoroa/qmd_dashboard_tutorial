@@ -1,0 +1,35 @@
+---
+title: "Today's Top Hits"
+format:
+  dashboard:
+    logo: "images/logo.png"
+    orientation: columns
+---
+
+## Column {width="35%"}
+
+Placeholder
+
+```{r, loadpackages}
+#| echo: false
+#| include: false
+library(tidyverse)
+```
+
+```{r, loadstarwars}
+head(starwars)
+```
+
+## Column {width="65%"}
+
+### Row {height="10%"}
+
+Placeholder
+
+### Row {height="70%"}
+
+Placeholder
+
+### Row {height="20%"}
+
+Placeholder
