@@ -14,10 +14,69 @@ Placeholder
 #| echo: false
 #| include: false
 library(tidyverse)
+library(httr2)
 ```
 
-```{r, loadstarwars}
-head(starwars)
+```{r, access_token}
+#| echo: false
+#| include: false
+client_id <- Sys.getenv("CLIENT_ID")
+client_secret <- Sys.getenv("CLIENT_SECRET")
+
+req_access_token <- request("https://accounts.spotify.com/api/token") |> 
+  req_method("POST") |> 
+  req_body_raw(paste0(
+      "grant_type=client_credentials&client_id=",
+      client_id,
+      "&client_secret=",
+      client_secret), 
+    "application/x-www-form-urlencoded"
+  ) |> 
+  req_perform() |>
+  resp_body_json()
+
+spotify_access_token <- req_access_token$access_token
+```
+
+``` {r}
+playlist_id <- "37i9dQZF1DXcBWIGoYBM5M"
+
+# curl_translate("curl --request GET \
+#   --url https://api.spotify.com/v1/playlists/3cEYpjA9oz9GiPac4AsH4n \
+#   --header 'Authorization: Bearer 1POdFZRZbvbqqillRxMr2z'")
+today_pl <- request(paste0("https://api.spotify.com/v1/playlists/", playlist_id)) |> 
+  req_method("GET") |> 
+  req_headers(
+    Authorization = paste("Bearer", spotify_access_token)
+  ) |> 
+  req_perform() |>
+  resp_body_json()
+
+top_hits_df <-  data.frame(
+  song_name = unlist(lapply(today_pl$track$items, function(x) x$track$name)),
+  song_id = unlist(lapply(today_pl$track$items, function(x) x$track$id)),
+  artist_name = unlist(lapply(today_pl$track$items, function(x) x$track$album$artists[[1]]$name)),
+  album_art = unlist(lapply(today_pl$track$items, function(x) x$track$album$images[[1]]$url)),
+  track_duration = unlist(lapply(today_pl$track$items, function(x) x$track$duration_ms)),
+  popularity = unlist(lapply(today_pl$track$items, function(x) x$track$popularity))
+)
+```
+
+``` {r}
+
+tempo_list <- vector(mode = "list", length = 50)
+for (i in 1:50) {
+  audio_analysis <- request(paste0("https://api.spotify.com/v1/audio-analysis/", 
+    top_hits_df$song_id[i])) |> 
+  req_method("GET") |> 
+  req_headers(
+    Authorization = paste("Bearer", spotify_access_token)
+  ) |> 
+  req_perform() |>
+  resp_body_json()
+  tempo_list[[i]] <- unlist(lapply(audio_analysis$sections, function(x) x$tempo ))
+}
+top_hits_df$tempo <- I(tempo_list)
 ```
 
 ## Column {width="65%"}
